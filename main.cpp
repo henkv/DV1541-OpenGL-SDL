@@ -205,7 +205,6 @@ void createTriangData()
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 
-
 	// Create an internal Vertex Buffer Object (VBO) and bind it for manipulation
 	glGenBuffers(1, &gVertexBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, gVertexBuffer);

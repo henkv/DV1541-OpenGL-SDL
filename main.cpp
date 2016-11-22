@@ -2,6 +2,8 @@
 #include <GL/glew.h>
 #include <fstream>
 
+#define BUFFER_OFFSET(i) ((char *)nullptr + (i))
+
 void GL_Die(const char *errorMessage);
 void SDL_Die(const char *errorMessage);
 void SDL_GL_SetAttributes();
@@ -10,7 +12,14 @@ void handleWindowEvents(SDL_Window *window);
 
 GLuint loadShader(GLenum type, const char *fileName);
 void catchShaderError(GLuint shader);
-GLuint createShaderProgram();
+
+void createShaderProgram();
+void createTriangData();
+
+
+GLuint gVertexBuffer = 0;
+GLuint gVertexAttribute = 0;
+GLuint gShaderProgram = 0;
 
 
 int main(int argc, char ** argv)
@@ -25,27 +34,20 @@ int main(int argc, char ** argv)
 	// Initialize Glew
 	glewInit();
 	glViewport(0, 0, 640, 480);
-
-	// Set "empty" color of the window
-	glClearColor(0.f, 0.f, 0.f, 1.f);
-
-	// Compile and link shaders into program
-	GLuint shaderProgram = createShaderProgram();
-	GLuint vertexArray = 0;
+	createShaderProgram();
+	createTriangData();
 
 	while (true)
 	{
 		// Take care of window events
 		handleWindowEvents(mainWindow);
-
 		// Clear the back buffer
+		glClearColor(0, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// Use the shaders
-		glUseProgram(shaderProgram);
-
-		// Draw the box on the back buffer
-		glBindVertexArray(vertexArray);
+		glUseProgram(gShaderProgram);
+		glBindVertexArray(gVertexAttribute);
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 		// Swap the render buffers to show changes in the window.
@@ -166,20 +168,57 @@ void catchShaderError(GLuint shader)
 	}
 }
 
-GLuint createShaderProgram()
+void createShaderProgram()
 {
-	GLuint program = 0;
 	// Create vertex and fragment shader
 	GLuint vs = loadShader(GL_VERTEX_SHADER, "VertexShader.glsl");
 	GLuint fs = loadShader(GL_FRAGMENT_SHADER, "FragmentShader.glsl");
 
 	// Link shader program (connect vs and ps)
-	program = glCreateProgram();
-	glAttachShader(program, vs);
-	glAttachShader(program, fs);
-	glLinkProgram(program);
+	gShaderProgram = glCreateProgram();
+	glAttachShader(gShaderProgram, vs);
+	glAttachShader(gShaderProgram, fs);
+	glLinkProgram(gShaderProgram);
+}
 
-	return program;
+void createTriangData()
+{
+	struct Vertex
+	{
+		float x, y, z;
+		float r, g, b;
+	};
+
+	Vertex vertices[4] = {
+	//  {     x,     y,    z,    r,    g,    b }
+		{ -0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f },
+		{  0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f },
+		{ -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f },
+		{  0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f }
+	};
+
+	// Create an internal Vertex Array Object (VAO) and bind it for manipulation
+	glGenVertexArrays(1, &gVertexAttribute);
+	glBindVertexArray(gVertexAttribute);
+
+	// Registers the first and second attribute for the VAO
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+
+
+	// Create an internal Vertex Buffer Object (VBO) and bind it for manipulation
+	glGenBuffers(1, &gVertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, gVertexBuffer);
+	// "maybe" copy the vertices to the gpu
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	// get index of vertex variables in shader 
+	GLuint pData = glGetAttribLocation(gShaderProgram, "vertex_position");
+	GLuint cData = glGetAttribLocation(gShaderProgram, "vertex_color");
+
+	// write vertex data to memory
+	glVertexAttribPointer(pData, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(0));
+	glVertexAttribPointer(cData, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(float) * 3));
 }
 
 void handleWindowEvents(SDL_Window *window)

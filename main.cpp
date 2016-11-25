@@ -71,6 +71,7 @@ int main(int argc, char ** argv)
 	return 0;
 }
 
+
 void GL_Die(const char *errorMessage)
 {
 	// Create a message box to show the error

@@ -17,6 +17,8 @@ void createShaderProgram();
 void createTriangData();
 
 
+SDL_Window *mainWindow;
+
 GLuint gVertexBuffer = 0;
 GLuint gVertexAttribute = 0;
 GLuint gShaderProgram = 0;
@@ -25,15 +27,13 @@ GLuint gShaderProgram = 0;
 int main(int argc, char ** argv)
 {
 	// Create the window
-	SDL_Window *mainWindow = createWindow("DV1541 OpenGL SDL", 640, 480);
-
-	// Set OpenGL Settings
-	SDL_GL_SetAttributes();
-	SDL_GL_SetSwapInterval(1);
+	mainWindow = createWindow("DV1541 OpenGL SDL", 640, 480);
 
 	// Initialize Glew
 	glewInit();
-	glViewport(0, 0, 640, 480);
+	//glViewport(0, 0, 640, 480);
+	glClearColor(0, 0, 0, 1);
+
 	createShaderProgram();
 	createTriangData();
 
@@ -41,8 +41,8 @@ int main(int argc, char ** argv)
 	{
 		// Take care of window events
 		handleWindowEvents(mainWindow);
+
 		// Clear the back buffer
-		glClearColor(0, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// Use the shaders
@@ -95,6 +95,7 @@ void SDL_GL_SetAttributes()
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
 	// Set the render mode to doubble buffer
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 }
 
@@ -113,11 +114,16 @@ SDL_Window* createWindow(const char *name, int width, int height)
 		SDL_WINDOWPOS_CENTERED,
 		width,
 		height,
-		SDL_WINDOW_OPENGL);
+		SDL_WINDOW_OPENGL
+	);
 
 	// Check if creation was successful
 	if (!window)
 		SDL_Die("Failed to create Window");
+
+	// Set OpenGL Settings
+	SDL_GL_SetAttributes();
+	SDL_GL_SetSwapInterval(1);
 
 	// Try to create a GL Context in window
 	if (!SDL_GL_CreateContext(window))

@@ -48,6 +48,8 @@ int main(int argc, char ** argv)
 		// Use the shaders
 		glUseProgram(gShaderProgram);
 		glBindVertexArray(gVertexAttribute);
+
+
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 		// Swap the render buffers to show changes in the window.
@@ -92,7 +94,7 @@ void SDL_GL_SetAttributes()
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
 	// Make sure we can only use the newest version of the api
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
 	// Set the render mode to doubble buffer
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);

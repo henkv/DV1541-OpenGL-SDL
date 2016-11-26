@@ -38,11 +38,14 @@ GLuint gShaderProgram = 0;
 int main(int argc, char ** argv)
 {
 	// Create the window
-	mainWindow = createWindow("DV1541 OpenGL SDL", 640, 480);
+	mainWindow = createWindow("DV1541 OpenGL SDL", 800, 800);
 
 	// Initialize Glew
 	glewInit();
-	//glViewport(0, 0, 640, 480);
+	glViewport(0, 0, 800, 800);
+
+	//modelview matrix
+
 	glClearColor(0, 0, 0, 1);
 
 	createShaderProgram();
@@ -56,13 +59,25 @@ int main(int argc, char ** argv)
 		// Clear the back buffer
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		// Use the shaders
-		glUseProgram(gShaderProgram);
-		glBindVertexArray(gVertexAttribute);
+		//// Use the shaders
+		//glUseProgram(gShaderProgram);
+		//glBindVertexArray(gVertexAttribute);
 
 
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		//glDrawArrays(GL_POINTS, 0, 4);
 
+		glBegin(GL_TRIANGLES);
+
+			glColor3f(1, 0, 0);
+			glVertex3f(0, -0.5, 0);
+
+			glColor3f(0, 1, 0);
+			glVertex3f(-0.5, 0.5, 0);
+
+			glColor3f(0, 0, 1);
+			glVertex3f(0.5, 0.5, 0);
+
+		glEnd();
 
 		// Swap the render buffers to show changes in the window.
 		SDL_GL_SwapWindow(mainWindow);
@@ -107,10 +122,10 @@ void SDL_GL_SetAttributes()
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
 	// Make sure we can only use the newest version of the api
-	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
 	// Set the render mode to doubble buffer
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+	//SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 }
 

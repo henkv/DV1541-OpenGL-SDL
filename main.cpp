@@ -38,11 +38,11 @@ GLuint gShaderProgram = 0;
 int main(int argc, char ** argv)
 {
 	// Create the window
-	mainWindow = createWindow("DV1541 OpenGL SDL", 800, 800);
+	mainWindow = createWindow("DV1541 OpenGL SDL", 800, 600);
 
 	// Initialize Glew
 	glewInit();
-	glViewport(0, 0, 800, 800);
+	glViewport(0, 0, 800, 600);
 
 	//modelview matrix
 
@@ -60,24 +60,22 @@ int main(int argc, char ** argv)
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		//// Use the shaders
-		//glUseProgram(gShaderProgram);
-		//glBindVertexArray(gVertexAttribute);
+		glUseProgram(gShaderProgram);
+		glBindVertexArray(gVertexAttribute);
+		glDrawArrays(GL_POINTS, 0, 4);
 
+		//glBegin(GL_TRIANGLES);
 
-		//glDrawArrays(GL_POINTS, 0, 4);
+		//	glColor3f(1, 0, 0);
+		//	glVertex3f(0, -0.5, 0);
 
-		glBegin(GL_TRIANGLES);
+		//	glColor3f(0, 1, 0);
+		//	glVertex3f(-0.5, 0.5, 0);
 
-			glColor3f(1, 0, 0);
-			glVertex3f(0, -0.5, 0);
+		//	glColor3f(0, 0, 1);
+		//	glVertex3f(0.5, 0.5, 0);
 
-			glColor3f(0, 1, 0);
-			glVertex3f(-0.5, 0.5, 0);
-
-			glColor3f(0, 0, 1);
-			glVertex3f(0.5, 0.5, 0);
-
-		glEnd();
+		//glEnd();
 
 		// Swap the render buffers to show changes in the window.
 		SDL_GL_SwapWindow(mainWindow);

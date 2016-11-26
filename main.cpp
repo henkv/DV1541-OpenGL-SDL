@@ -2,16 +2,6 @@
 #include <GL/glew.h>
 #include <fstream>
 
-/*
-Hello! I've been working on Assignment 2 at home with OpenGL and decided to use the newest version of SDL and Glew. I get an access violation error while trying to call: glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-Exception thrown at 0x0000000053912D79 (nvoglv64.dll) in DV1541-OpenGL-SDL.exe: 0xC0000005: Access violation reading location 0x0000000000000000.
-
-While googeling for an answer I found out that its mostly due to diver errors according to this page:
-https://www.vegascreativesoftware.info/us/forum/vegas12-keeps-crashing-with-nvoglv64-dll-exception--97917/
-
-I've tried using my code in the project provided and it works there.
-*/
 
 #define BUFFER_OFFSET(i) ((char *)nullptr + (i))
 

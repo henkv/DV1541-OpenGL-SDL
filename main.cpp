@@ -1,264 +1,139 @@
-#include <SDL.h>
-#include <GL/glew.h>
-#include <fstream>
+#include <stdexcept>
+#include <Windows.h>
+#include <sstream>
 
+#include <GL\glew.h>
+#include <glm\glm.hpp>
+#include <glm\gtc\constants.hpp>
+#include <glm\gtc\matrix_transform.hpp>
 
-#define BUFFER_OFFSET(i) ((char *)nullptr + (i))
+#include "Shader.h"
+#include "Window.h"
+#include "Texture.h"
 
-void GL_Die(const char *errorMessage);
-void SDL_Die(const char *errorMessage);
-void SDL_GL_SetAttributes();
-SDL_Window* createWindow(const char *name, int width, int height);
-void handleWindowEvents(SDL_Window *window);
+#include "bth_image.h"
 
-GLuint loadShader(GLenum type, const char *fileName);
-void catchShaderError(GLuint shader);
+using namespace glm;
 
-void createShaderProgram();
 void createTriangData();
-
-
-SDL_Window *mainWindow;
 
 GLuint gVertexBuffer = 0;
 GLuint gVertexAttribute = 0;
-GLuint gShaderProgram = 0;
+
+const mat4 I;
+const vec3 X(1, 0, 0);
+const vec3 Y(0, 1, 0);
+const vec3 Z(0, 0, 1);
+const vec3 O(0, 0, 0);
 
 
 int main(int argc, char ** argv)
 {
-	// Create the window
-	mainWindow = createWindow("DV1541 OpenGL SDL", 800, 600);
-
-	// Initialize Glew
-	glewInit();
-	glViewport(0, 0, 800, 600);
-
-	//modelview matrix
-
-	glClearColor(0, 0, 0, 1);
-
-	createShaderProgram();
-	createTriangData();
-
-	while (true)
+	try
 	{
-		// Take care of window events
-		handleWindowEvents(mainWindow);
+		// Create the window
+		Window window = { "DV1541 OpenGL SDL", 800, 600 };
 
-		// Clear the back buffer
-		glClear(GL_COLOR_BUFFER_BIT);
+		// Initialize Glew
+		glewExperimental = GL_TRUE;
+		glewInit();
 
-		//// Use the shaders
-		glUseProgram(gShaderProgram);
-		glBindVertexArray(gVertexAttribute);
-		glDrawArrays(GL_POINTS, 0, 4);
+		glClearColor(0, 0, 0, 1); 
+		glEnable(GL_DEPTH_TEST);
 
-		//glBegin(GL_TRIANGLES);
+		createTriangData();
 
-		//	glColor3f(1, 0, 0);
-		//	glVertex3f(0, -0.5, 0);
+		Shader shader = { 
+			"VertexShader.glsl", 
+			"FragmentShader.glsl",
+			"GeometryShader.glsl"
+		};
+		shader.use();
 
-		//	glColor3f(0, 1, 0);
-		//	glVertex3f(-0.5, 0.5, 0);
+		Texture texture = {
+			(GLsizei)BTH_IMAGE_WIDTH, 
+			(GLsizei)BTH_IMAGE_HEIGHT, 
+			(GLubyte*)BTH_IMAGE_DATA
+		};
+		texture.use();
 
-		//	glColor3f(0, 0, 1);
-		//	glVertex3f(0.5, 0.5, 0);
+		shader.setUniform_mat4("view", lookAt(vec3(0, 0, -2), O, Y));
+		shader.setUniform_mat4("proj", perspective(pi<float>() * 0.45f, 8.f / 6.f, 0.1f, 20.f));
+		shader.setUniform_vec3("offset", vec3(0, 0, 0.33));
 
-		//glEnd();
+		shader.setUniform_vec3("lightPosition", vec3(0, 0, -10));
+		shader.setUniform_vec3("lightColor",	vec3(1));
+		shader.setUniform_vec3("ambientLight",  vec3(0.0f));
 
-		// Swap the render buffers to show changes in the window.
-		SDL_GL_SwapWindow(mainWindow);
+		vec2 mousePos;
+		mat4 world;
+		while (true)
+		{
+			window.handleEvents();
+			window.clear();
+
+			mousePos = window.getMouseCoords();
+
+
+			world = rotate<GLfloat>(I, half_pi<float>() * mousePos.x, Y);
+			world = rotate<GLfloat>(world, 0.5f * half_pi<float>() * (-mousePos.y), X);
+			shader.setUniform_mat4("world", world);
+
+
+
+			glBindVertexArray(gVertexAttribute);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+			window.draw();
+		}
+	}
+	catch (const std::runtime_error &error)
+	{
+		std::wostringstream msg;
+		msg << error.what() << std::endl;
+		OutputDebugStringW(msg.str().c_str());
 	}
 
 	return 0;
-}
-
-
-void GL_Die(const char *errorMessage)
-{
-	// Create a message box to show the error
-	SDL_ShowSimpleMessageBox(
-		SDL_MESSAGEBOX_ERROR,
-		"GL Died",
-		errorMessage,
-		NULL);
-
-	// Exit application
-	SDL_Quit();
-	exit(-1);
-}
-
-void SDL_Die(const char *errorMessage)
-{
-	// Create a message box to show the error
-	SDL_ShowSimpleMessageBox(
-		SDL_MESSAGEBOX_ERROR,
-		errorMessage,
-		SDL_GetError(),
-		NULL);
-
-	// Exit application
-	SDL_Quit();
-	exit(-1);
-}
-
-void SDL_GL_SetAttributes()
-{
-	// Set the active OpenGL version to 3.2
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-
-	// Make sure we can only use the newest version of the api
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
-	// Set the render mode to doubble buffer
-	//SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-}
-
-SDL_Window* createWindow(const char *name, int width, int height)
-{
-	SDL_Window *window;
-
-	// Try to initialize SDL
-	if (SDL_Init(SDL_INIT_VIDEO) < 0)
-		SDL_Die("Unable to initialize SDL");
-
-	// Create an SDL Window
-	window = SDL_CreateWindow(
-		name,
-		SDL_WINDOWPOS_CENTERED,
-		SDL_WINDOWPOS_CENTERED,
-		width,
-		height,
-		SDL_WINDOW_OPENGL
-	);
-
-	// Check if creation was successful
-	if (!window)
-		SDL_Die("Failed to create Window");
-
-	// Set OpenGL Settings
-	SDL_GL_SetAttributes();
-	SDL_GL_SetSwapInterval(1);
-
-	// Try to create a GL Context in window
-	if (!SDL_GL_CreateContext(window))
-		SDL_Die("Failed to create GL Context");
-
-	return window;
-}
-
-GLuint loadShader(GLenum type, const char * fileName)
-{
-	// Register a new shader
-	GLuint shader = glCreateShader(type);
-
-	// Open shader file and save its content in a string
-	std::ifstream file(fileName);
-	std::string fileContent(
-		(std::istreambuf_iterator<char>(file)),
-		std::istreambuf_iterator<char>());
-	file.close();
-
-	// Make a pointer to a cstring
-	const char* fileContentPtr = fileContent.c_str();
-
-	// Load shader code into graphics card and compile it
-	glShaderSource(shader, 1, &fileContentPtr, nullptr);
-	glCompileShader(shader);
-	
-	// Check if any erros occured and handle them
-	catchShaderError(shader);
-
-	return GLuint();
-}
-
-void catchShaderError(GLuint shader)
-{
-	GLint success = 0;
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-
-	if (success == GL_FALSE)
-	{
-		GLint logSize = 0;
-		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
-
-		char *log = new char[logSize];
-		glGetShaderInfoLog(shader, logSize, &logSize, &log[0]);
-
-		GL_Die(log);
-	}
-}
-
-void createShaderProgram()
-{
-	// Create vertex and fragment shader
-	GLuint vs = loadShader(GL_VERTEX_SHADER, "VertexShader.glsl");
-	GLuint fs = loadShader(GL_FRAGMENT_SHADER, "FragmentShader.glsl");
-
-	// Link shader program (connect vs and ps)
-	gShaderProgram = glCreateProgram();
-	glAttachShader(gShaderProgram, vs);
-	glAttachShader(gShaderProgram, fs);
-	glLinkProgram(gShaderProgram);
 }
 
 void createTriangData()
 {
 	struct Vertex
 	{
-		float x, y, z;
-		float r, g, b;
+		vec3 postion;
+		vec3 color;
+		vec2 uv;
 	};
 
-	Vertex vertices[4] = {
-	//  {     x,     y,    z,    r,    g,    b }
-		{ -0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f },
-		{  0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f },
-		{ -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f },
-		{  0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f }
-	};
+	Vertex vertices[] = {
+		{{ -1,  1, 0 }, { 1, 0, 0 }, { 1, 0 }},
+		{{  1,  1, 0 }, { 0, 1, 0 }, { 0, 0 }},
+		{{ -1, -1, 0 }, { 0, 0, 1 }, { 1, 1 }},
+		{{  1, -1, 0 }, { 1, 1, 1 }, { 0, 1 }}
+	};	
 
 	// Create an internal Vertex Array Object (VAO) and bind it for manipulation
 	glGenVertexArrays(1, &gVertexAttribute);
 	glBindVertexArray(gVertexAttribute);
 
-	// Registers the first and second attribute for the VAO
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-
 	// Create an internal Vertex Buffer Object (VBO) and bind it for manipulation
+	// "maybe" copy the vertices to the gpu
 	glGenBuffers(1, &gVertexBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, gVertexBuffer);
-	// "maybe" copy the vertices to the gpu
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	// get index of vertex variables in shader 
-	GLuint pData = glGetAttribLocation(gShaderProgram, "vertex_position");
-	GLuint cData = glGetAttribLocation(gShaderProgram, "vertex_color");
-
 	// write vertex data to memory
-	glVertexAttribPointer(pData, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(0));
-	glVertexAttribPointer(cData, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(float) * 3));
+	// location 0 position
+	// location 1 color
+	// location 2 texture coordinate
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)sizeof(vec3));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(sizeof(vec3) * 2));
+
 }
 
-void handleWindowEvents(SDL_Window *window)
-{
-	static SDL_Event windowEvent;
-
-	// Poll all events sent to window
-	while (SDL_PollEvent(&windowEvent)) {
-		// Check what event type and handle appropriately
-		switch (windowEvent.type)
-		{
-		case SDL_QUIT:
-			SDL_Quit();
-			exit(0);
-			break;
-
-		}
-	}
-}
 

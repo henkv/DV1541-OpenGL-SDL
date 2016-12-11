@@ -46,15 +46,13 @@ int main(int argc, char ** argv)
 		Shader shader = { 
 			"VertexShader.glsl", 
 			"FragmentShader.glsl",
-			"GeometryShader.glsl"
-		};
+			"GeometryShader.glsl" };
 		shader.use();
 
 		Texture texture = {
 			(GLsizei)BTH_IMAGE_WIDTH, 
 			(GLsizei)BTH_IMAGE_HEIGHT, 
-			(GLubyte*)BTH_IMAGE_DATA
-		};
+			(GLubyte*)BTH_IMAGE_DATA };
 		texture.use();
 
 		shader.setUniform("view", lookAt(vec3(0, 0, -2), O, Y));
@@ -128,8 +126,8 @@ void createTriangData()
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)sizeof(vec3));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(sizeof(vec3) * 2));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(sizeof(vec3)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(2 * sizeof(vec3)));
 
 }
 

@@ -31,11 +31,11 @@ public:
 
 	GLint getUniform(const GLchar * name);
 
-	void setUniform_f(const GLchar * name, GLfloat value);
-	void setUniform_vec2(const GLchar * name, const vec2 & vec);
-	void setUniform_vec3(const GLchar * name, const vec3 & vec);
-	void setUniform_mat4(const GLchar * name, const mat4 & mat);
+	void setUniform(const GLchar * name, GLfloat value);
+	void setUniform(const GLchar * name, const vec2 & vec);
+	void setUniform(const GLchar * name, const vec3 & vec);
+	void setUniform(const GLchar * name, const mat4 & mat);
 
-	void setUniform_ui(const GLchar * name, GLuint value);
-	void setUniform_uvec2(const GLchar * name, const uvec2 & vec);
+	void setUniform(const GLchar * name, GLuint value);
+	void setUniform(const GLchar * name, const uvec2 & vec);
 };

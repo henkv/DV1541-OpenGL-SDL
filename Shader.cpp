@@ -93,28 +93,28 @@ GLint Shader::getUniform(const GLchar * name)
 	return glGetUniformLocation(program, name);
 }
 
-void Shader::setUniform_f(const GLchar * name, GLfloat value)
+void Shader::setUniform(const GLchar * name, GLfloat value)
 {
-	glUniform1ui(getUniform(name), value);
+	glUniform1f(getUniform(name), value);
 }
-void Shader::setUniform_vec2(const GLchar * name, const vec2 & vec)
+void Shader::setUniform(const GLchar * name, const vec2 & vec)
 {
 	glUniform2fv(getUniform(name), 1, value_ptr(vec));
 }
-void Shader::setUniform_vec3(const GLchar * name, const vec3 & vec)
+void Shader::setUniform(const GLchar * name, const vec3 & vec)
 {
 	glUniform3fv(getUniform(name), 1, value_ptr(vec));
 }
-void Shader::setUniform_mat4(const GLchar * name, const mat4 & mat)
+void Shader::setUniform(const GLchar * name, const mat4 & mat)
 {
 	glUniformMatrix4fv(getUniform(name), 1, GL_FALSE, value_ptr(mat));
 }
 
-void Shader::setUniform_ui(const GLchar * name, GLuint value)
+void Shader::setUniform(const GLchar * name, GLuint value)
 {
 	glUniform1ui(getUniform(name), value);
 }
-void Shader::setUniform_uvec2(const GLchar * name, const uvec2 & vec)
+void Shader::setUniform(const GLchar * name, const uvec2 & vec)
 {
 	glUniform2uiv(getUniform(name), 1, value_ptr(vec));
 }

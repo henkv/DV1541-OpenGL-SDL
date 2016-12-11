@@ -57,13 +57,13 @@ int main(int argc, char ** argv)
 		};
 		texture.use();
 
-		shader.setUniform_mat4("view", lookAt(vec3(0, 0, -2), O, Y));
-		shader.setUniform_mat4("proj", perspective(pi<float>() * 0.45f, 8.f / 6.f, 0.1f, 20.f));
-		shader.setUniform_vec3("offset", vec3(0, 0, 0.33f));
+		shader.setUniform("view", lookAt(vec3(0, 0, -2), O, Y));
+		shader.setUniform("proj", perspective(pi<float>() * 0.45f, 8.f / 6.f, 0.1f, 20.f));
+		shader.setUniform("offset", vec3(0, 0, 0.33f));
 
-		shader.setUniform_vec3("lightPosition", vec3(0, 0, -10));
-		shader.setUniform_vec3("lightColor",	vec3(1));
-		shader.setUniform_vec3("ambientLight",  vec3(0));
+		shader.setUniform("lightPosition", vec3(0, 0, -10));
+		shader.setUniform("lightColor",	vec3(1));
+		shader.setUniform("ambientLight",  vec3(0));
 
 		vec2 mousePos;
 		mat4 world;
@@ -76,7 +76,7 @@ int main(int argc, char ** argv)
 
 			world = rotate(I, half_pi<float>() * mousePos.x, Y);
 			world = rotate(world, -0.5f * half_pi<float>() * mousePos.y, X);
-			shader.setUniform_mat4("world", world);
+			shader.setUniform("world", world);
 
 			glBindVertexArray(gVertexAttribute);
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

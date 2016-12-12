@@ -87,6 +87,7 @@ int main(int argc, char ** argv)
 		std::wostringstream msg;
 		msg << error.what() << std::endl;
 		OutputDebugStringW(msg.str().c_str());
+		throw;
 	}
 
 	return 0;
